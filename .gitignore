@@ -1,0 +1,21 @@
+# Секреты и учётные данные — НИКОГДА не коммитим
+.env
+service_account.json
+*.session
+*.session-journal
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Логи
+*.log
+
+# IDE
+.idea/
+.vscode/
+.DS_Store

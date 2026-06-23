@@ -1,0 +1,19 @@
+# --- Core ---
+python-dotenv>=1.0.0
+
+# --- OpenAI (ChatGPT API) ---
+openai>=1.30.0
+pydantic>=2.5.0
+
+# --- Parsers ---
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+feedparser>=6.0.10
+
+# --- Telegram ---
+telethon>=1.34.0
+
+# --- Google Sheets ---
+gspread>=6.0.0
+google-auth>=2.27.0

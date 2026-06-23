@@ -1,0 +1,65 @@
+# Ежедневный запуск парсера новостей через GitHub Actions.
+#
+# Все секреты задаются в настройках репозитория:
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#
+# Нужные секреты (имена совпадают с переменными из .env):
+#   GOOGLE_SHEET_ID
+#   GOOGLE_SERVICE_ACCOUNT_JSON   (весь JSON сервисного аккаунта одной строкой)
+#   OPENAI_API_KEY
+#   OPENAI_MODEL                  (необязательно, есть значение по умолчанию)
+#   TELEGRAM_API_ID
+#   TELEGRAM_API_HASH
+#   TELEGRAM_PHONE
+#   TELEGRAM_SESSION_B64          (session-файл Telethon в base64, см. README)
+
+name: daily-news-parser
+
+on:
+  schedule:
+    # Каждый день в 06:00 UTC. Поменяйте при необходимости (формат cron).
+    - cron: "0 6 * * *"
+  # Позволяет запускать вручную из вкладки Actions.
+  workflow_dispatch:
+
+jobs:
+  run-parser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Установка зависимостей
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Восстановление Telegram session-файла из секрета
+        # Telethon требует session-файл, чтобы не запрашивать код подтверждения.
+        # Локально создайте session (см. README), закодируйте в base64 и
+        # положите в секрет TELEGRAM_SESSION_B64.
+        if: ${{ env.TELEGRAM_SESSION_B64 != '' }}
+        env:
+          TELEGRAM_SESSION_B64: ${{ secrets.TELEGRAM_SESSION_B64 }}
+        run: |
+          echo "$TELEGRAM_SESSION_B64" | base64 -d > telegram_session.session
+
+      - name: Запуск парсера
+        env:
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+          TELEGRAM_SESSION_NAME: telegram_session
+          LOG_LEVEL: INFO
+        run: python main.py
