@@ -84,12 +84,15 @@ def _skip_openai_passthrough(raw_item: dict) -> NewsItem:
     Просто переносит сырые данные без нормализации — чтобы проверить парсинг.
     """
     return NewsItem(
-        is_relevant_news=True,
+        is_relevant=True,
+        priority="C",
         title=raw_item.get("raw_title", "")[:200],
+        company="",
         published_at=raw_item.get("published_at", ""),
+        relevance_topic="другое",
+        vertical="общее",
         summary="",
         full_text_clean=raw_item.get("raw_text", ""),
-        category="другое",
         reason="SKIP_OPENAI режим — без обработки ChatGPT",
         language="other",
     )
@@ -146,7 +149,7 @@ def run() -> None:
         processed_count += 1
 
         # --- Нерелевантные публикации -> лист Skipped ---
-        if not news.is_relevant_news:
+        if not news.is_relevant:
             log.debug("Нерелевантно: %s", raw_item.get("url", ""))
             if storage is not None:
                 storage.append_skipped(
@@ -175,7 +178,10 @@ def run() -> None:
             storage.append_news(collected_at=collected_at, raw_item=raw_item, news=news)
             stats.rows_written += 1
         else:
-            log.info("[DRY_RUN] Новость: %s | %s | %s", news.category, news.importance, news.title)
+            log.info(
+                "[DRY_RUN] [%s] %s | %s | %s",
+                news.priority or "-", news.relevance_topic, news.vertical, news.title,
+            )
 
     # --- Закрываем Telegram-клиент, если он использовался ---
     telegram_parser.close()

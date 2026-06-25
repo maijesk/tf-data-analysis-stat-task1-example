@@ -4,7 +4,7 @@
 В таблице три листа:
     News    — нормализованные релевантные новости;
     Raw     — все сырые публикации (для аудита и отладки);
-    Skipped — нерелевантные публикации (is_relevant_news == false).
+    Skipped — нерелевантные публикации (is_relevant == false).
 
 Перед записью класс читает уже существующие строки, чтобы:
     * наполнить дедупликатор (свериться с тем, что уже записано);
@@ -28,11 +28,13 @@ SCOPES = [
 ]
 
 # Заголовки колонок для каждого листа (порядок важен — он же порядок записи).
+# Лист News построен под карточку новости для дайджеста АВИ.
 NEWS_HEADERS = [
-    "collected_at", "source_type", "source", "original_url", "title",
-    "published_at", "summary", "full_text_clean", "category", "tags",
-    "companies", "people", "country", "importance", "reason", "language",
-    "is_relevant_news", "hash", "telegram_message_id",
+    "collected_at", "source_type", "source", "original_url", "title", "company",
+    "published_at", "priority", "relevance_topic", "vertical",
+    "what_happened", "how_it_works", "audience", "why_for_avi", "figures",
+    "summary", "full_text_clean", "tags", "companies", "language",
+    "is_relevant", "hash", "telegram_message_id",
 ]
 RAW_HEADERS = [
     "collected_at", "source_type", "source", "url", "raw_title",
@@ -135,25 +137,29 @@ class GoogleSheetsStorage:
         return ", ".join(v for v in (values or []) if v)
 
     def append_news(self, *, collected_at: str, raw_item: dict, news) -> None:
-        """Добавить одну строку в лист News."""
+        """Добавить одну строку в лист News (карточка новости АВИ)."""
         row = [
             collected_at,
             raw_item.get("source_type", ""),
             raw_item.get("source_name", ""),
             raw_item.get("url", ""),
             news.title,
+            news.company,
             news.published_at,
+            news.priority,
+            news.relevance_topic,
+            news.vertical,
+            news.what_happened,
+            news.how_it_works,
+            news.audience,
+            news.why_for_avi,
+            news.figures,
             news.summary,
             news.full_text_clean,
-            news.category,
             self._join(news.tags),
             self._join(news.companies),
-            self._join(news.people),
-            news.country,
-            news.importance,
-            news.reason,
             news.language,
-            "TRUE" if news.is_relevant_news else "FALSE",
+            "TRUE" if news.is_relevant else "FALSE",
             raw_item.get("hash", ""),
             raw_item.get("telegram_message_id", ""),
         ]

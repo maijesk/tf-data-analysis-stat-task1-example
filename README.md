@@ -217,7 +217,7 @@ python main.py
     "name": "Название сайта",
     "url": "https://example.com/news",   # страница со списком новостей
     "type": "html",
-    "category_hint": "банки",
+    "category_hint": "авто, классифайд",
 }
 ```
 
@@ -230,7 +230,7 @@ python main.py
     "name": "Сложный сайт",
     "url": "https://example.com/news",
     "type": "html",
-    "category_hint": "финтех",
+    "category_hint": "e-commerce, маркетплейс",
     "link_selector":  "a.article-link",    # как находить ссылки на новости
     "title_selector": "h1.article-title",  # заголовок внутри статьи
     "date_selector":  "time.published",    # дата
@@ -248,7 +248,7 @@ python main.py
     "name": "RSS источник",
     "url": "https://example.com/rss",
     "type": "rss",
-    "category_hint": "финтех",
+    "category_hint": "недвижимость",
 }
 ```
 
@@ -260,7 +260,7 @@ python main.py
     "url": "https://t.me/channel_name",
     "username": "channel_name",   # без @
     "type": "telegram",
-    "category_hint": "банковские новости",
+    "category_hint": "маркетплейс, C2C",
 }
 ```
 
@@ -318,11 +318,17 @@ crontab -e
 
 ## Структура таблицы Google Sheets
 
-**Лист `News`** (нормализованные релевантные новости): `collected_at`,
-`source_type`, `source`, `original_url`, `title`, `published_at`, `summary`,
-`full_text_clean`, `category`, `tags`, `companies`, `people`, `country`,
-`importance`, `reason`, `language`, `is_relevant_news`, `hash`,
+**Лист `News`** (карточки новостей для дайджеста АВИ): `collected_at`,
+`source_type`, `source`, `original_url`, `title`, `company`, `published_at`,
+`priority` (A/B/C), `relevance_topic`, `vertical`, `what_happened`,
+`how_it_works`, `audience`, `why_for_avi`, `figures`, `summary`,
+`full_text_clean`, `tags`, `companies`, `language`, `is_relevant`, `hash`,
 `telegram_message_id`.
+
+> Колонки `what_happened` / `how_it_works` / `audience` / `why_for_avi` /
+> `figures` — это буллеты карточки из шаблона дайджеста АВИ. `relevance_topic` —
+> одно из направлений (AI для покупателя, AI для продавца, marketplace/UX,
+> вертикали, trust & safety, бизнес-модель, бенчмаркинг конкурентов, другое).
 
 **Лист `Raw`** (все сырые публикации, для аудита): `collected_at`, `source_type`,
 `source`, `url`, `raw_title`, `raw_text`, `published_at`, `telegram_message_id`,
